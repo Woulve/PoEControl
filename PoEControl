@@ -1,0 +1,267 @@
+#!/bin/bash
+
+ARGS="$@"
+
+argcheck(){ #checks all arguments
+
+	for i in $ARGS; do
+		if [[ "$i" == "-s" ]]; then  #check for -s argument
+			getstatus
+ 		fi
+
+		MODE=$(i2cget -y 1 0x20 0x12) #read mode register from chip
+		MODE=${MODE:2:4} #cut off "0x"
+		MODE_BIN=$(echo "obase=2;ibase=16;${MODE^^}" | bc) #convert to binary <-- cuts off leading zeroes :(
+		MODE_DEC=$(echo "obase=10; ibase=16; ${MODE^^}" | bc) #convert to decimal
+		for n in $(seq 1 $((8-${#MODE_BIN}))); do #extend the string to 8 chars, because converting to binary cuts off leading zeroes
+			MODE_BIN=$(echo "0"$MODE_BIN)
+		done	
+		
+		
+		#manual = bits 01 for port
+		if [[ "$i" == "-mana" ]]; then #all ports manual mode
+		#todo		
+		fi
+		if [[ "$i" == "-man1" ]]; then  #port 1 manual mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/7) #replace position 7 with 0	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/8) #replace position 8 with 1
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 1 set to manual mode"
+ 		fi
+		if [[ "$i" == "-man2" ]]; then  #port 2 manual mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/5) #replace position 5 with 1	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/6) #replace position 6 with 0
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 2 set to manual mode"
+ 		fi
+		if [[ "$i" == "-man3" ]]; then  #port 3 manual mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/3) #replace position 3 with 0	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/4) #replace position 4 with 1
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 3 set to manual mode"
+ 		fi
+		if [[ "$i" == "-man4" ]]; then  #port 4 manual mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/1) #replace position 1 with	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/2) #replace position 2 with 1
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 4 set to manual mode"
+ 		fi
+
+
+		#automatic = 11 for port
+		if [[ "$i" == "-auto1" ]]; then  #port 1 automatic mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/7) #replace position 7 with 1	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/8) #replace position 8 with 1
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 1 set to auto mode"
+ 		fi
+		if [[ "$i" == "-auto2" ]]; then  #port 2 automatic mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/5) #replace position 5 with 1	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/6) #replace position 6 with 1
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 2 set to auto mode"
+ 		fi
+		if [[ "$i" == "-auto3" ]]; then  #port 3 automatic mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/3) #replace position 3 with 1	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/4) #replace position 4 with 1
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 3 set to auto mode"
+ 		fi
+		if [[ "$i" == "-auto4" ]]; then  #port 4 automatic mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/1) #replace position 1 with 1	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/2) #replace position 2 with 1
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 4 set to auto mode"
+ 		fi
+
+
+
+		#semi-automatic = 10 for port
+		if [[ "$i" == "-sauto1" ]]; then  #port 1 semi-automatic mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/7) #replace position 7 with 1	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/8) #replace position 8 with 0
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 1 set to semi-auto mode"
+ 		fi
+		if [[ "$i" == "-sauto2" ]]; then  #port 2 semi-automatic mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/5) #replace position 5 with 1	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/6) #replace position 6 with 0
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 2 set to semi-auto mode"
+ 		fi
+		if [[ "$i" == "-sauto3" ]]; then  #port 3 semi-automatic mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/3) #replace position 3 with 1	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/4) #replace position 4 with 0
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 3 set to semi-auto mode"
+ 		fi
+		if [[ "$i" == "-sauto4" ]]; then  #port 4 semi-automatic mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./1/1) #replace position 1 with 1	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/2) #replace position 2 with 0
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 4 set to semi-auto mode"
+ 		fi
+
+
+
+		#off = 00 for port
+		if [[ "$i" == "-dis1" ]]; then  #port 1 disabled mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/7) #replace position 7 with 0	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/8) #replace position 8 with 0
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 1 disabled"
+ 		fi
+		if [[ "$i" == "-dis2" ]]; then  #port 2 disabled mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/5) #replace position 5 with 0	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/6) #replace position 6 with 0
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 2 disabled"
+ 		fi
+		if [[ "$i" == "-dis3" ]]; then  #port 3 disabled mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/3) #replace position 3 with 0	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/4) #replace position 4 with 0
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 3 disabled"
+ 		fi
+		if [[ "$i" == "-dis4" ]]; then  #port 4 disabled mode
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/1) #replace position 1 with 0	
+			MODE_BIN=$(echo $MODE_BIN | sed s/./0/2) #replace position 2 with 0
+			i2cset -y 1 0x20 0x12 0x$(echo "ibase=2;obase=10000;$MODE_BIN"  | bc) #convert back to hex and send via i2c
+			echo "Port 4 disabled"
+ 		fi
+
+
+
+		if [[ "$i" == "-ona" ]]; then  #switch on all ports
+			sudo i2cset -y 1 0x20 0x19 0x0f 
+			echo "All ports turned on"
+ 		fi
+		if [[ "$i" == "-on1" ]]; then  #switch on port 1
+			sudo i2cset -y 1 0x20 0x19 0x01 
+			echo "Port 1 turned on"
+ 		fi
+		if [[ "$i" == "-on2" ]]; then  #switch on port 2
+			sudo i2cset -y 1 0x20 0x19 0x02 
+			echo "Port 2 turned on"
+ 		fi
+		if [[ "$i" == "-on3" ]]; then  #switch on port 3
+			sudo i2cset -y 1 0x20 0x19 0x04 
+			echo "Port 3 turned on"
+ 		fi
+		if [[ "$i" == "-on4" ]]; then  #switch on port 4
+			sudo i2cset -y 1 0x20 0x19 0x08 
+			echo "Port 4 turned on"
+ 		fi
+		
+		if [[ "$i" == "-offa" ]]; then  #switch off all ports
+			sudo i2cset -y 1 0x20 0x19 0xf0 
+			echo "All ports turned off"
+ 		fi
+		if [[ "$i" == "-off1" ]]; then  #switch off port 1
+			sudo i2cset -y 1 0x20 0x19 0x10 
+			echo "Port 1 turned off"
+ 		fi
+		if [[ "$i" == "-off2" ]]; then  #switch off port 2
+			sudo i2cset -y 1 0x20 0x19 0x20 
+			echo "Port 2 turned off"
+ 		fi
+		if [[ "$i" == "-off3" ]]; then  #switch off port 3
+			sudo i2cset -y 1 0x20 0x19 0x40 
+			echo "Port 3 turned off"
+ 		fi
+		if [[ "$i" == "-off4" ]]; then  #switch off port 4
+			sudo i2cset -y 1 0x20 0x19 0x80 
+			echo "Port 4 turned off"
+ 		fi
+		#echo $MODE_BIN
+	done
+}
+
+getstatus(){ #gets status of all ports from the 0x10 register
+	printf "\nPort:        1        2        3        4\n"
+        
+printf "Mode:"
+	MODE=$(i2cget -y 1 0x20 0x12) #read mode register from chip
+	MODE=${MODE:2:4} #cut off "0x"
+	MODE_DEC=$(echo "obase=10; ibase=16; ${MODE^^}" | bc) #convert to decimal
+	
+	state1=$(($MODE_DEC & 3)) #3 for bitwise 00000011 comparison
+	state2=$(($MODE_DEC & 12)) #12 for bitwise 00001100 comparison
+	state3=$(($MODE_DEC & 48)) #48 for bitwise 00110000 comparison
+	state4=$(($MODE_DEC & 192)) #192 for bitwise 11000000 comparison
+	
+	if [[ state1 -eq 0 ]]; then #00 = off
+		printf "       DIS"
+	elif [[ state1 -eq 1 ]]; then #01 = manual
+		printf "       MAN"	
+	elif [[ state1 -eq 2 ]]; then #10 = semi-manual
+		printf "     S-AUTO"
+	elif [[ state1 -eq 3 ]]; then #11 = auto
+		printf "       AUTO"
+	fi
+
+	if [[ state2 -eq 0 ]]; then #00 = off
+		printf "      DIS"
+	elif [[ state2 -eq 4 ]]; then #01 = manual
+		printf "      MAN"	
+	elif [[ state2 -eq 8 ]]; then #10 = semi-auto
+		printf "   S-AUTO"
+	elif [[ state2 -eq 12 ]]; then #11 = auto
+		printf "     AUTO"
+	fi
+
+	if [[ state3 -eq 0 ]]; then #00 = off
+		printf "      DIS"
+	elif [[ state3 -eq 16 ]]; then #01 = manual
+		printf "      MAN"	
+	elif [[ state3 -eq 32 ]]; then #10 = semi-auto
+		printf "   S-AUTO"
+	elif [[ state3 -eq 48 ]]; then #11 = auto
+		printf "     AUTO"
+	fi
+
+	if [[ state4 -eq 0 ]]; then #00 = off
+		printf "      DIS\n"
+	elif [[ state4 -eq 64 ]]; then #01 = manual
+		printf "      MAN\n"	
+	elif [[ state4 -eq 128 ]]; then #10 = semi-auto
+		printf "   S-AUTO\n"
+	elif [[ state4 -eq 192 ]]; then #11 = auto
+		printf "     AUTO\n"
+	fi
+	
+
+
+	POWERSTATUS=$(i2cget -y 1 0x20 0x10) #read power register from chip
+	POWERSTATUS=${POWERSTATUS:2:4} #cut off "0x"
+	POWERSTATUS_DEC=$(echo "obase=10; ibase=16; ${POWERSTATUS^^}" | bc) #convert to decimal
+
+	printf "State: "
+	state1=$(($POWERSTATUS_DEC & 1)) #1 for bitwise 0001 comparison
+	state2=$(($POWERSTATUS_DEC & 2)) #2 for bitwise 0010 comparison
+	state3=$(($POWERSTATUS_DEC & 4)) #4 for bitwise 0100 comparison
+	state4=$(($POWERSTATUS_DEC & 8)) #8 for bitwise 1000 comparison
+	
+	if [[ state1 -gt 0 ]]; then
+		printf "      ON"
+	else
+		printf "     OFF"	
+	fi
+	if [[ state2 -gt 0 ]]; then
+		printf "       ON"
+	else
+		printf "      OFF"
+	fi
+	if [[ state3 -gt 0 ]]; then
+		printf "       ON"
+	else
+		printf "      OFF"
+	fi
+	if [[ state4 -gt 0 ]]; then
+		printf "       ON\n"
+	else
+		printf "      OFF\n"	
+	fi
+}
+
+argcheck
