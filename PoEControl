@@ -1,4 +1,5 @@
 #!/bin/bash
+#Script to control the POE TPS23861 chip over I2C
 
 ARGS="$@"
 
